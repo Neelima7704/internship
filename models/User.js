@@ -51,6 +51,12 @@ const userSchema = new mongoose.Schema({
     enrolledAt: {
       type: Date,
       default: Date.now
+    },
+    enrollmentDetails: {
+      name: String,
+      email: String,
+      phone: String,
+      address: String
     }
   }],
   resetPasswordToken: String,

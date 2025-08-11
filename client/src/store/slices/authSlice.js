@@ -1,12 +1,12 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
-import axios from 'axios'
+import api from '../../utils/axios'
 
 // Async thunks
 export const login = createAsyncThunk(
   'auth/login',
   async (credentials, { rejectWithValue }) => {
     try {
-      const response = await axios.post('/api/auth/login', credentials)
+      const response = await api.post('/auth/login', credentials)
       return response.data
     } catch (error) {
       return rejectWithValue(error.response.data)
@@ -18,7 +18,7 @@ export const register = createAsyncThunk(
   'auth/register',
   async (userData, { rejectWithValue }) => {
     try {
-      const response = await axios.post('/api/auth/register', userData)
+      const response = await api.post('/auth/register', userData)
       return response.data
     } catch (error) {
       return rejectWithValue(error.response.data)
@@ -30,7 +30,7 @@ export const logout = createAsyncThunk(
   'auth/logout',
   async (_, { rejectWithValue }) => {
     try {
-      await axios.get('/api/auth/logout')
+      await api.get('/auth/logout')
       return null
     } catch (error) {
       return rejectWithValue(error.response.data)
@@ -42,7 +42,7 @@ export const getMe = createAsyncThunk(
   'auth/getMe',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get('/api/auth/me')
+      const response = await api.get('/auth/me')
       return response.data
     } catch (error) {
       return rejectWithValue(error.response.data)

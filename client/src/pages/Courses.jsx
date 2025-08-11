@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchCourses } from '../store/slices/courseSlice'
+import ExternalResources from '../components/ExternalResources'
 
 const Courses = () => {
   const dispatch = useDispatch()
@@ -35,7 +36,7 @@ const Courses = () => {
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {courses.map((course) => (
-              <div key={course._id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+              <div key={course._id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
                 <div className="aspect-video bg-gray-200 dark:bg-gray-700">
                   <img 
                     src={course.thumbnail?.url || 'https://via.placeholder.com/400x225'} 
@@ -58,17 +59,7 @@ const Courses = () => {
                   <p className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-3">
                     {course.description}
                   </p>
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center">
-                      <span className="text-yellow-400">★</span>
-                      <span className="text-sm text-gray-600 dark:text-gray-300 ml-1">
-                        {course.ratings} ({course.numOfReviews} reviews)
-                      </span>
-                    </div>
-                    <span className="text-sm text-gray-500 dark:text-gray-400">
-                      {course.totalLectures} lectures
-                    </span>
-                  </div>
+                  
                   <div className="flex justify-between items-center">
                     <div>
                       {course.discountedPrice > 0 ? (
@@ -90,6 +81,13 @@ const Courses = () => {
                       View Course
                     </Link>
                   </div>
+                  
+                  {/* External Resources Section */}
+                  {course.externalResources && (
+                    <div className="mt-4">
+                      <ExternalResources resources={course.externalResources} />
+                    </div>
+                  )}
                 </div>
               </div>
             ))}

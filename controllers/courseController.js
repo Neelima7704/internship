@@ -205,4 +205,189 @@ exports.getInstructorCourses = async (req, res) => {
       message: error.message
     });
   }
+};
+
+// Enroll in a course
+exports.enrollCourse = async (req, res) => {
+  try {
+    const { courseId } = req.params;
+    const { name, email, phone, address } = req.body;
+    const userId = req.user.id;
+
+    // Validate required fields
+    if (!name || !email || !phone || !address) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide all required enrollment details'
+      });
+    }
+
+    // Check if course exists
+    const course = await Course.findById(courseId);
+    if (!course) {
+      return res.status(404).json({
+        success: false,
+        message: 'Course not found'
+      });
+    }
+
+    // Check if course is published
+    if (!course.isPublished) {
+      return res.status(400).json({
+        success: false,
+        message: 'Course is not available for enrollment'
+      });
+    }
+
+    // Check if user is already enrolled
+    const user = await User.findById(userId);
+    const isAlreadyEnrolled = user.enrolledCourses.some(
+      enrollment => enrollment.courseId.toString() === courseId
+    );
+
+    if (isAlreadyEnrolled) {
+      return res.status(400).json({
+        success: false,
+        message: 'You are already enrolled in this course'
+      });
+    }
+
+    // Update user details if provided
+    if (name) user.name = name;
+    if (email) user.email = email;
+
+    // Add course to user's enrolled courses with enrollment details
+    user.enrolledCourses.push({
+      courseId: courseId,
+      progress: 0,
+      completedLectures: [],
+      enrolledAt: new Date(),
+      enrollmentDetails: {
+        name,
+        email,
+        phone,
+        address
+      }
+    });
+
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Successfully enrolled in the course',
+      enrolledCourse: {
+        courseId: courseId,
+        courseTitle: course.title,
+        enrolledAt: new Date(),
+        enrollmentDetails: {
+          name,
+          email,
+          phone,
+          address
+        }
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// Get user's enrolled courses
+exports.getEnrolledCourses = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id)
+      .populate({
+        path: 'enrolledCourses.courseId',
+        select: 'title description thumbnail price category level totalLectures totalDuration'
+      });
+
+    res.status(200).json({
+      success: true,
+      enrolledCourses: user.enrolledCourses
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// Update course progress
+exports.updateCourseProgress = async (req, res) => {
+  try {
+    const { courseId } = req.params;
+    const { lectureId, completed } = req.body;
+    const userId = req.user.id;
+
+    const user = await User.findById(userId);
+    const enrollment = user.enrolledCourses.find(
+      enrollment => enrollment.courseId.toString() === courseId
+    );
+
+    if (!enrollment) {
+      return res.status(404).json({
+        success: false,
+        message: 'You are not enrolled in this course'
+      });
+    }
+
+    if (completed) {
+      // Add lecture to completed lectures if not already completed
+      if (!enrollment.completedLectures.includes(lectureId)) {
+        enrollment.completedLectures.push(lectureId);
+      }
+    } else {
+      // Remove lecture from completed lectures
+      enrollment.completedLectures = enrollment.completedLectures.filter(
+        lecture => lecture.toString() !== lectureId
+      );
+    }
+
+    // Calculate progress percentage
+    const course = await Course.findById(courseId);
+    const totalLectures = course.lectures.length;
+    const completedCount = enrollment.completedLectures.length;
+    enrollment.progress = totalLectures > 0 ? Math.round((completedCount / totalLectures) * 100) : 0;
+
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Progress updated successfully',
+      progress: enrollment.progress,
+      completedLectures: enrollment.completedLectures
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// Check if user is enrolled in a specific course
+exports.checkEnrollmentStatus = async (req, res) => {
+  try {
+    const { courseId } = req.params;
+    const userId = req.user.id;
+
+    const user = await User.findById(userId);
+    const isEnrolled = user.enrolledCourses.some(
+      enrollment => enrollment.courseId.toString() === courseId
+    );
+
+    res.status(200).json({
+      success: true,
+      isEnrolled
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
 }; 

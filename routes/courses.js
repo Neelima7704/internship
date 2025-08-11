@@ -7,7 +7,11 @@ const {
   updateCourse, 
   deleteCourse, 
   addLecture, 
-  getInstructorCourses 
+  getInstructorCourses,
+  enrollCourse,
+  getEnrolledCourses,
+  updateCourseProgress,
+  checkEnrollmentStatus
 } = require('../controllers/courseController');
 const { protect, authorize } = require('../middleware/auth');
 
@@ -17,6 +21,12 @@ router.get('/:id', getCourseById);
 
 // Protected routes
 router.use(protect);
+
+// User enrollment routes
+router.post('/:courseId/enroll', enrollCourse);
+router.get('/enrolled/my-courses', getEnrolledCourses);
+router.get('/:courseId/enrollment-status', checkEnrollmentStatus);
+router.put('/:courseId/progress', updateCourseProgress);
 
 // Instructor/Admin routes
 router.post('/', authorize('instructor', 'admin'), createCourse);

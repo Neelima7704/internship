@@ -43,6 +43,30 @@ const courseSchema = new mongoose.Schema({
     ref: 'User',
     required: true
   },
+  // External learning resources
+  externalResources: {
+    youtubePlaylist: {
+      type: String,
+      default: ''
+    },
+    websiteUrl: {
+      type: String,
+      default: ''
+    },
+    documentationUrl: {
+      type: String,
+      default: ''
+    },
+    githubRepo: {
+      type: String,
+      default: ''
+    },
+    additionalLinks: [{
+      title: String,
+      url: String,
+      description: String
+    }]
+  },
   lectures: [{
     title: {
       type: String,
